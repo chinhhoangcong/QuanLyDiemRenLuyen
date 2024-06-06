@@ -1,0 +1,180 @@
+{% extends 'admin/base_site.html' %}
+{% block content %}
+<h1>THỐNG KÊ</h1>
+<div style="display: flex; flex-direction: row; width: 100%;">
+    <div>
+        <table>
+            <thead>
+            <tr>
+                <th>Sinh Viên</th>
+                <th>Khoa</th>
+                <th>Tổng Điểm Rèn Luyện</th>
+            <tr>
+            </thead>
+            <tbody>
+            {% for t in stats_faculty %}
+            <tr>
+                <td>{{t.first_name}}</td>
+                <td>{{t.clas__faculty__name}}</td>
+                <td>{{t.TrainingPoint__totalScore}}</td>
+            </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    <div v style="min-width: 50%; margin-left: 20px">
+        <form>
+            <div>
+                <div>Khoa</div>
+                <input type="text" name="faculty" step="1"/>
+            </div>
+            <div>
+                <input type="submit" value="Lọc dữ liệu" class="btn btn-info"/>
+            </div>
+        </form>
+        <canvas id="myChart"></canvas>
+    </div>
+
+</div>
+<div style="display: flex; flex-direction: row; width: 100%;">
+    <div>
+        <table>
+            <thead>
+            <tr>
+                <th>Sinh Viên</th>
+                <th>Lớp</th>
+                <th>Tổng Điểm Rèn Luyện</th>
+            <tr>
+            </thead>
+            <tbody>
+            {% for t in stats_class %}
+            <tr>
+                <td>{{t.first_name}}</td>
+                <td>{{t.clas__name}}</td>
+                <td>{{t.TrainingPoint__totalScore}}</td>
+            </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    <div v style="min-width: 50%; margin-left: 20px">
+        <form>
+            <div>
+                <div>Lớp</div>
+                <input type="text" name="class" step="1"/>
+            </div>
+            <div>
+                <input type="submit" value="Lọc dữ liệu" class="btn btn-info"/>
+            </div>
+        </form>
+                <canvas id="myChart1"></canvas>
+    </div>
+
+</div>
+
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+    window.onload = function () {
+         const ctx = document.getElementById('myChart');
+
+            let data = [];
+            let labels = [];
+
+            {%for t in stats_faculty %}
+            labels.push('{{t.first_name}}');
+            data.push({{t.TrainingPoint__totalScore}});
+            {% endfor %}
+
+
+
+        new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'Điểm',
+                    data: data,
+                    borderWidth:  5,
+                    borderColor: 'black',
+                    backgroundColor: ['red', 'green', 'blue', 'gold', 'silver']
+                }]
+            },
+            options: {
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+        const ctx1 = document.getElementById('myChart1');
+
+        let data1 = [];
+        let labels1 = [];
+
+        {%for t in stats_class %}
+        labels1.push('{{t.clas__name}}');
+        data1.push({{t.TrainingPoint__totalScore}});
+        {% endfor %}
+
+        new Chart(ctx1, {
+            type: 'bar',
+            data: {
+                labels: labels1,
+                datasets: [{
+                    label: 'Điểm',
+                    data: data1,
+                    borderWidth:  5,
+                    borderColor: 'black',
+                    backgroundColor: ['red', 'green', 'blue', 'gold', 'silver']
+                }]
+            },
+            options: {
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+    }
+</script>
+
+
+<!--<script>-->
+<!--    window.onload = function1 () {-->
+<!--        const ctx1 = document.getElementById('myChart1');-->
+
+<!--        let data1 = [];-->
+<!--        let labels1 = [];-->
+
+<!--        {%for t in stats_class %}-->
+<!--        labels1.push('{{t.clas__name}}');-->
+<!--        data1.push({{t.TrainingPoint__totalScore}});-->
+<!--        {% endfor %}-->
+
+<!--        new Chart(ctx1, {-->
+<!--            type: 'bar',-->
+<!--            data: {-->
+<!--                labels: labels1,-->
+<!--                datasets: [{-->
+<!--                    label: 'Điểm',-->
+<!--                    data: data1,-->
+<!--                    borderWidth:  5,-->
+<!--                    borderColor: 'black',-->
+<!--                    backgroundColor: ['red', 'green', 'blue', 'gold', 'silver']-->
+<!--                }]-->
+<!--            },-->
+<!--            options: {-->
+<!--                scales: {-->
+<!--                    y: {-->
+<!--                        beginAtZero: true-->
+<!--                    }-->
+<!--                }-->
+<!--            }-->
+<!--        });-->
+<!--    }-->
+<!--</script>-->
+{% endblock %}

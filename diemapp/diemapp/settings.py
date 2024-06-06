@@ -36,16 +36,16 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'diem.apps.DiemConfig',
-    # 'ckeditor',
-    # 'ckeditor_uploader',
+    'ckeditor',
+    'ckeditor_uploader',
     # 'rest_framework',
     # 'drf_yasg',
     # 'cloudinary',
     # 'oauth2_provider'
 ]
-
+MEDIA_ROOT = '%s/diem/static/' % BASE_DIR
 AUTH_USER_MODEL = 'diem.User'
-
+CKEDITOR_UPLOAD_PATH = "ckeditor/images/"
 import pymysql
 pymysql.install_as_MySQLdb()
 
