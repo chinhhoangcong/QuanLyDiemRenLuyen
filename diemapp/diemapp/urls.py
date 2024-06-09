@@ -20,6 +20,7 @@ from diem.admin import admin_site
 
 
 urlpatterns = [
+    path('', include('diem.urls')),
     path('admin/', admin_site.urls),
     re_path(r'^ckeditor/', include('ckeditor_uploader.urls'))
 ]

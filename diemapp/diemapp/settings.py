@@ -38,7 +38,7 @@ INSTALLED_APPS = [
     'diem.apps.DiemConfig',
     'ckeditor',
     'ckeditor_uploader',
-    # 'rest_framework',
+    'rest_framework',
     # 'drf_yasg',
     # 'cloudinary',
     # 'oauth2_provider'
@@ -58,11 +58,11 @@ pymysql.install_as_MySQLdb()
 #
 # )
 
-REST_FRAMEWORK = {
-    'DEFAULT_AUTHENTICATION_CLASSES': (
-        'oauth2_provider.contrib.rest_framework.OAuth2Authentication',
-    )
-}
+# REST_FRAMEWORK = {
+#     'DEFAULT_AUTHENTICATION_CLASSES': (
+#         'oauth2_provider.contrib.rest_framework.OAuth2Authentication',
+#     )
+# }
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
