@@ -51,29 +51,17 @@ class StudentAdmin(UserAdmin):
             )
 
 
-class ScoreAdmin(admin.AdminSite):
-    fields = ['score', 'statute', 'trainingPoint']
-
-
-
-# class CourseAppAdminSite(admin.AdminSite):
-#     site_header = 'iSuccess'
-#
-#     # def get_urls(self):
-#     #     return [
-#     #         path('course-stats/', self.stats_view)
-#     #     ] + super().get_urls()
-#
-#     def stats_view(self, request):
-#         return TemplateResponse(request, 'admin/stats.html',{
-#             'stats' : dao.count_courses_by_cate()
-#         })
+class ScoreAdmin(admin.ModelAdmin):
+    fields = ['score', 'statute', 'trainingPoint', 'student']
 
 
 admin_site.register(Statute, StatuteAdmin)
 admin_site.register(TrainingPoint, TrainingPointAdmin)
 admin_site.register(Student, StudentAdmin)
 admin_site.register(Faculty)
-admin_site.register(Score)
+admin_site.register(Score, ScoreAdmin)
 admin_site.register(Activity)
 admin_site.register(Class)
+admin_site.register(Registration)
+admin_site.register(MissingPointsReport)
+admin_site.register(Achievements)

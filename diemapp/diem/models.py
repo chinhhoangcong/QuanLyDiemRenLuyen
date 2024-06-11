@@ -36,6 +36,7 @@ class User(AbstractUser):
 class Student(User):
     clas = models.ForeignKey('Class', on_delete=models.RESTRICT, related_name='students', null=True)
     avatar = models.ImageField(upload_to="diem/%Y/%m")
+    activity = models.ManyToManyField('Activity', through='Registration', related_name='student')
 
     class Meta:
         verbose_name_plural = 'Sinh viên'
@@ -93,7 +94,7 @@ class Score(BaseModel):
     student = models.ForeignKey(Student, on_delete=models.RESTRICT, related_name='scores', null=True)
 
     def __str__(self):
-        return  self.student.last_name + self.student.first_name + ' - ' +  self.statute.name + ' - ' + self.score
+        return self.student.last_name + self.student.first_name + ' - ' + self.statute.name + ' - ' + self.score
 
     class Meta:
         unique_together = ('statute', 'trainingPoint')
@@ -109,3 +110,39 @@ class Activity(BaseModel):
 
     class Meta:
         verbose_name_plural = 'Hoạt Động Ngoại Khóa'
+
+
+class Registration(BaseModel):
+    attended = models.BooleanField(default=False)
+    student = models.ForeignKey(Student, on_delete=models.RESTRICT, related_name='registration')
+    activity = models.ForeignKey(Activity, on_delete=models.RESTRICT, related_name='registration')
+
+    def __str__(self):
+        return f"{self.student} - {self.activity}"
+
+    class Meta:
+        verbose_name_plural = 'Đăng kí Hoạt Động Ngoại Khóa'
+
+
+class MissingPointsReport(BaseModel):
+    student = models.ForeignKey(Student, on_delete=models.RESTRICT, related_name='MissingPointsReport', default=False)
+    activity = models.ForeignKey(Activity, on_delete=models.RESTRICT, related_name='MissingPointsReport', default=False)
+    proof = models.CharField(max_length=255, null=True,default=False)
+    approved = models.BooleanField(default=False)
+
+    def __str__(self):
+        return f"{self.student} - {self.activity} - {'Approved' if self.approved else 'Đang chờ xử lý'}"
+
+    class Meta:
+        verbose_name_plural = 'Danh Sách Báo Thiếu'
+
+
+class Achievements(BaseModel):
+    name = models.CharField(max_length=50,null=True)
+    student = models.ForeignKey(Student, on_delete=models.RESTRICT, related_name="achievements")
+
+    def __str__(self):
+        return f"{self.student} - {self.name} "
+
+    class Meta:
+        verbose_name_plural = 'Thành Tích Ngoại Khóa'
