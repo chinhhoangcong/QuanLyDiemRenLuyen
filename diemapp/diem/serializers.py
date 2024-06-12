@@ -3,26 +3,22 @@ from rest_framework import serializers
 
 
 class UserSerializer(serializers.ModelSerializer):
-    # faculty = FacultySerializer()
-    fullname = serializers.SerializerMethodField(source='fullname')
-    # avatar = serializers.SerializerMethodField(source='avatar')
+    class Meta:
+        model = User
+        fields = ['first_name', 'last_name', 'username', 'password', 'email', 'avatar']
+        extra_kwargs = {
+            'password': {
+                'write_only': True
+            }
+        }
 
-    # def get_avatar(self, user):
-    #     return user.avatar.url
+    def create(self, validated_data):
+        data = validated_data.copy()
 
-    def get_fullname(self, user):
-        return user.last_name + user.first_name
-
-
-# class UserDetailSerializer(UserSerializer):
-#     major = serializers.SerializerMethodField(source='major')
-#     committees = serializers.SerializerMethodField(source='committees')
-#
-#     def get_major(self, user):
-#         if user.role == 'student':
-#             return user.student.major.name
-#
-#         return None
+        user = User(**data)
+        user.set_password(data['password'])
+        user.save()
+        return user
 
 
 class ActivitySerializer(serializers.ModelSerializer):
@@ -34,7 +30,7 @@ class ActivitySerializer(serializers.ModelSerializer):
 class ScoreSerializer(serializers.ModelSerializer):
     class Meta:
         model = Score
-        fields = ['statute','score']
+        fields = ['statute', 'score']
 
 
 class TrainingPointSerializer(serializers.ModelSerializer):
@@ -42,27 +38,25 @@ class TrainingPointSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = TrainingPoint
-        fields = ['active', 'totalScore', 'student','scores']
+        fields = ['active', 'totalScore', 'student', 'scores']
 
 
 class StatuteSerializer(serializers.ModelSerializer):
     class Meta:
         model = Statute
-        fields = ['name', 'point','description']
+        fields = ['name', 'point', 'description']
 
 
 class StudentSerializer(UserSerializer):
-
     class Meta:
         model = Student
-        fields = ['fullname','clas']
+        fields = ['first_name', 'last_name', 'clas']
 
 
 class RegistrationSerializer(serializers.ModelSerializer):
     class Meta:
         model = Registration
-        fields = ['attended', 'activity' ]
-
+        fields = ['attended', 'activity']
 
 
 class FacultySerializer(serializers.ModelSerializer):
@@ -74,6 +68,12 @@ class FacultySerializer(serializers.ModelSerializer):
 class MissingPointsReportSerializer(serializers.ModelSerializer):
     class Meta:
         model = MissingPointsReport
-        fields = ['proof','approved','student','activity']
+        fields = ['proof', 'approved', 'student', 'activity']
 
 
+class CommentSerializer(serializers.ModelSerializer):
+    student = StudentSerializer()
+
+    class Meta:
+        model = Comment
+        fields = ['id', 'content', 'student']

@@ -1,11 +1,10 @@
 from enum import Enum
 from ckeditor.fields import RichTextField
 from django.core.validators import MaxValueValidator, MinValueValidator
-# from cloudinary.models import CloudinaryField
-# from cloudinary.models import CloudinaryField
 from django.db import models
 from django.contrib.auth.models import AbstractUser
 from django.db.models import CharField
+from cloudinary.models import CloudinaryField
 
 
 # Create your models here.
@@ -28,6 +27,7 @@ class UserRole(Enum):
 
 class User(AbstractUser):
     role = models.CharField(UserRole, max_length=20, null=True)
+    avatar = CloudinaryField('avatar', null=True)
 
     def __str__(self):
         return self.last_name + self.first_name
@@ -35,11 +35,20 @@ class User(AbstractUser):
 
 class Student(User):
     clas = models.ForeignKey('Class', on_delete=models.RESTRICT, related_name='students', null=True)
-    avatar = models.ImageField(upload_to="diem/%Y/%m")
     activity = models.ManyToManyField('Activity', through='Registration', related_name='student')
 
     class Meta:
         verbose_name_plural = 'Sinh viên'
+
+
+class Assistant(User):
+    class Meta:
+        verbose_name_plural = 'Trợ Lý Sinh Viên'
+
+
+class Manager(User):
+    class Meta:
+        verbose_name_plural = 'Chuyên Viên Cộng Tác Sinh Viên'
 
 
 class Faculty(models.Model):
@@ -81,7 +90,7 @@ class TrainingPoint(BaseModel):
     student = models.ForeignKey(Student, on_delete=models.RESTRICT, related_name='TrainingPoint', null=True)
 
     def __str__(self):
-        return  self.student.last_name + self.student.first_name
+        return self.student.last_name + self.student.first_name
 
     class Meta:
         verbose_name_plural = 'Bảng điểm rèn luyện'
@@ -127,7 +136,7 @@ class Registration(BaseModel):
 class MissingPointsReport(BaseModel):
     student = models.ForeignKey(Student, on_delete=models.RESTRICT, related_name='MissingPointsReport', default=False)
     activity = models.ForeignKey(Activity, on_delete=models.RESTRICT, related_name='MissingPointsReport', default=False)
-    proof = models.CharField(max_length=255, null=True,default=False)
+    proof = models.CharField(max_length=255, null=True, default=False)
     approved = models.BooleanField(default=False)
 
     def __str__(self):
@@ -138,7 +147,7 @@ class MissingPointsReport(BaseModel):
 
 
 class Achievements(BaseModel):
-    name = models.CharField(max_length=50,null=True)
+    name = models.CharField(max_length=50, null=True)
     student = models.ForeignKey(Student, on_delete=models.RESTRICT, related_name="achievements")
 
     def __str__(self):
@@ -146,3 +155,19 @@ class Achievements(BaseModel):
 
     class Meta:
         verbose_name_plural = 'Thành Tích Ngoại Khóa'
+
+
+class Interaction(BaseModel):
+    student = models.ForeignKey(Student, on_delete=models.CASCADE, null=False)
+    activity = models.ForeignKey(Activity, on_delete=models.CASCADE, null=False)
+
+    class Meta:
+        abstract = True
+
+
+class Comment(Interaction):
+    content = models.CharField(max_length=255, null=False)
+
+
+class Like(Interaction):
+    active = models.BooleanField()
