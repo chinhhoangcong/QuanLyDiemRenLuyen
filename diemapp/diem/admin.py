@@ -17,9 +17,11 @@ class TrainingPointAdminSite(admin.AdminSite):
     def stats_view(self, request):
         faculty = request.GET.get('faculty')
         clas = request.GET.get('class')
+        achievements = request.GET.get('achievements')
         return TemplateResponse(request, 'admin/stats.html', {
             'stats_faculty': dao.get_training_core_by_faculty(faculty_name=faculty),
-            'stats_class': dao.get_training_score_by_class(class_name=clas)
+            'stats_class': dao.get_training_score_by_class(class_name=clas),
+            'stats_achievements': dao.get_training_score_by_achievements(achieve_name=achievements)
         })
 
 
@@ -55,7 +57,7 @@ class StudentAdmin(UserAdmin):
 
 class AssistantAdmin(UserAdmin):
     list_display = ['pk', 'first_name', 'last_name']
-    fields = UserAdmin.fields
+    fields = UserAdmin.fields + ['faculty']
 
     def save_model(self, request, obj, form, change):
         obj.role = UserRole.ASSISTANT.value

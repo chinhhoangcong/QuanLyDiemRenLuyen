@@ -27,6 +27,19 @@ class ActivitySerializer(serializers.ModelSerializer):
         fields = ['name', 'description', 'active']
 
 
+class ActivityDetailSerializer(ActivitySerializer):
+    liked = serializers.SerializerMethodField()
+
+    def get_liked(self, activity):
+        request = self.context.get('request')
+        if request.user.is_authenticated:
+            return activity.like_set.filter(active=True).exists()
+
+    class Meta:
+        model = ActivitySerializer.Meta.model
+        fields = ActivitySerializer.Meta.fields + ['liked']
+
+
 class ScoreSerializer(serializers.ModelSerializer):
     class Meta:
         model = Score
@@ -54,9 +67,17 @@ class StudentSerializer(UserSerializer):
 
 
 class RegistrationSerializer(serializers.ModelSerializer):
+    student = StudentSerializer()
+
     class Meta:
         model = Registration
-        fields = ['attended', 'activity']
+        fields = ['attended', 'activity', 'student']
+
+
+class CreateRegisterActivitySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Registration
+        fields = ['student', 'activity']
 
 
 class FacultySerializer(serializers.ModelSerializer):
@@ -71,9 +92,21 @@ class MissingPointsReportSerializer(serializers.ModelSerializer):
         fields = ['proof', 'approved', 'student', 'activity']
 
 
+class CreateMissingPointsReportSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = MissingPointsReport
+        fields = ['proof', 'student', 'activity']
+
+
 class CommentSerializer(serializers.ModelSerializer):
     student = StudentSerializer()
 
     class Meta:
         model = Comment
         fields = ['id', 'content', 'student']
+
+
+class AchievementSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Achievements
+        fields = ['id', 'name']

@@ -17,5 +17,8 @@ def get_training_score_by_class(class_name):
     return scores_by_class
 
 
+def get_training_score_by_achievements(achieve_name):
+    scores_by_class = Student.objects.filter(achievements__name=achieve_name) \
+        .values('first_name', 'achievements__name', 'TrainingPoint__totalScore')
 
-
+    return scores_by_class

@@ -9,9 +9,10 @@ from rest_framework.decorators import action
 # Create your views here.
 class ActivityViewSet(viewsets.ViewSet, generics.ListAPIView, generics.RetrieveAPIView, generics.CreateAPIView):
     queryset = Activity.objects.all()
-    serializer_class = serializers.ActivitySerializer
+    serializer_class = serializers.ActivityDetailSerializer
     pagination_class = paginators.ActivityPaginator
-    permission_classes = [permissions.AllowAny]
+
+    # permission_classes = [permissions.AllowAny()]
 
     def get_queryset(self):
         queries = self.queryset
@@ -23,10 +24,15 @@ class ActivityViewSet(viewsets.ViewSet, generics.ListAPIView, generics.RetrieveA
         return queries
 
     def get_permissions(self):
-        if self.action in ['add_comment']:
-            return [permissions.IsAuthenticated()]
+        if self.action in ['add_comment', 'like', 'join_activity']:
+            return [perms.IsStudentOfAuthenticated()]
+        if self.action in ['create']:
+            return [perms.IsAssistantAuthenticated()]
 
-        return self.permission_classes
+        return [permissions.AllowAny()]
+
+    def create(self, request, *args, **kwargs):
+        return super().create(request, *args, **kwargs)
 
     @action(methods=['post'], url_path='comment', detail=True)
     def add_comment(self, request, pk):
@@ -36,6 +42,30 @@ class ActivityViewSet(viewsets.ViewSet, generics.ListAPIView, generics.RetrieveA
                                    content=request.data.get('content'))
 
         return Response(serializers.CommentSerializer(c).data, status=status.HTTP_201_CREATED)
+
+    @action(methods=['post'], detail=True, url_path='student')
+    def join_activity(self, request, pk):
+        user = request.user
+        student = Student.objects.get(id=user.id)
+        if Registration.objects.filter(student=student, activity=self.get_object()).exists():
+            return Response({'error': 'Student already registered for this activity.'},
+                            status=status.HTTP_400_BAD_REQUEST)
+        registration = Registration.objects.create(student=student, activity=self.get_object(),
+                                                   attended=request.data.get('attended'))
+
+        return Response(serializers.RegistrationSerializer(registration).data, status=status.HTTP_201_CREATED)
+
+    @action(methods=['post'], url_path='likes', detail=True)
+    def like(self, request, pk):
+        user = request.user
+        student = Student.objects.get(id=user.id)
+        like, created = Like.objects.get_or_create(student=student, activity=self.get_object())
+        if not created:
+            like.active = not like.active
+            like.save()
+
+        return Response(serializers.ActivityDetailSerializer(self.get_object(), context={'request': request}).data,
+                        status=status.HTTP_200_OK)
 
 
 class TrainingPointViewSet(viewsets.ViewSet, generics.ListAPIView, generics.RetrieveAPIView, generics.CreateAPIView):
@@ -53,6 +83,14 @@ class StudentViewSet(viewsets.ViewSet, generics.ListAPIView, generics.RetrieveAP
     queryset = Student.objects.all()
     serializer_class = serializers.StudentSerializer
 
+    def get_permissions(self):
+        if self.action in ['registration', 'get_trainingPoint', 'create_missing_point']:
+            return [perms.IsStudentAuthenticated()]
+        if self.action in ['achievements']:
+            return [perms.IsAssistantAuthenticated()]
+
+        return [permissions.AllowAny()]
+
     @action(methods=['get'], detail=True)
     def registration(self, request, pk):
         student = self.get_object()
@@ -60,16 +98,35 @@ class StudentViewSet(viewsets.ViewSet, generics.ListAPIView, generics.RetrieveAP
         return Response(serializers.RegistrationSerializer(registrations, many=True).data, status=status.HTTP_200_OK)
 
     @action(methods=['get'], detail=True, url_path='trainingPoint')
-    def def_trainingPoint(self, request, pk):
+    def get_trainingPoint(self, request, pk):
         student = self.get_object()
         trainingPoint = TrainingPoint.objects.filter(student=student)
 
         return Response(serializers.TrainingPointSerializer(trainingPoint, many=True).data, status=status.HTTP_200_OK)
 
+    @action(methods=['post'], detail=False, url_path='missing-point')
+    def create_missing_point(self, request):
+        user = request.user
+        student = Student.objects.get(id=user.id)
 
-class MissingPointsReportViewSet(viewsets.ViewSet, generics.ListAPIView, generics.RetrieveAPIView):
+        missing_report = MissingPointsReport.objects.create(student=student,
+                                                            activity_id=request.data.get('activity_id'),
+                                                            proof=request.data.get('proof'))
+
+        return Response(serializers.CreateMissingPointsReportSerializer(missing_report).data,
+                        status=status.HTTP_201_CREATED)
+
+    @action(methods=['get'], detail=True, url_path="achievements")
+    def achievements(self, request, pk):
+        achievement = Achievements.objects.filter(student=self.get_object())
+        return Response(serializers.AchievementSerializer(achievement).data, status=status.HTTP_200_OK)
+
+
+class MissingPointsReportViewSet(viewsets.ViewSet, generics.ListAPIView, generics.RetrieveAPIView,
+                                 generics.DestroyAPIView):
     queryset = MissingPointsReport.objects.all()
     serializer_class = serializers.MissingPointsReportSerializer
+    permission_classes = [perms.IsAssistantAuthenticated]
 
     def get_queryset(self):
         queries = self.queryset
@@ -103,7 +160,7 @@ class UserViewSet(viewsets.ViewSet, generics.CreateAPIView, generics.ListAPIView
         return Response(serializers.UserSerializer(request.user).data)
 
 
-class CommentViewSet(viewsets.ViewSet, generics.DestroyAPIView):
+class CommentViewSet(viewsets.ViewSet, generics.DestroyAPIView, generics.UpdateAPIView):
     queryset = Comment.objects.all()
     serializer_class = serializers.CommentSerializer
     permission_classes = [perms.IsStudentOfAuthenticated]

@@ -42,6 +42,8 @@ class Student(User):
 
 
 class Assistant(User):
+    faculty = models.ForeignKey('Faculty', on_delete=models.RESTRICT, default=True, null=False)
+
     class Meta:
         verbose_name_plural = 'Trợ Lý Sinh Viên'
 
@@ -170,4 +172,7 @@ class Comment(Interaction):
 
 
 class Like(Interaction):
-    active = models.BooleanField()
+    active = models.BooleanField(default=True)
+
+    class Meta:
+        unique_together = ('student', 'activity')

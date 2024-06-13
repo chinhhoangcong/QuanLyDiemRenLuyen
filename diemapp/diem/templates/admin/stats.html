@@ -67,7 +67,42 @@
                 <input type="submit" value="Lọc dữ liệu" class="btn btn-info"/>
             </div>
         </form>
-                <canvas id="myChart1"></canvas>
+        <canvas id="myChart1"></canvas>
+    </div>
+
+</div>
+<div style="display: flex; flex-direction: row; width: 100%;">
+    <div>
+        <table>
+            <thead>
+            <tr>
+                <th>Sinh Viên</th>
+                <th>Thành Tích</th>
+                <th>Tổng Điểm Rèn Luyện</th>
+            <tr>
+            </thead>
+            <tbody>
+            {% for t in stats_achievements %}
+            <tr>
+                <td>{{t.first_name}}</td>
+                <td>{{t.achievements__name}}</td>
+                <td>{{t.TrainingPoint__totalScore}}</td>
+            </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    <div v style="min-width: 50%; margin-left: 20px">
+        <form>
+            <div>
+                <div>Thành Tích</div>
+                <input type="text" name="achievements" step="1"/>
+            </div>
+            <div>
+                <input type="submit" value="Lọc dữ liệu" class="btn btn-info"/>
+            </div>
+        </form>
+        <canvas id="myChart2"></canvas>
     </div>
 
 </div>
@@ -126,6 +161,36 @@
                 datasets: [{
                     label: 'Điểm',
                     data: data1,
+                    borderWidth:  5,
+                    borderColor: 'black',
+                    backgroundColor: ['red', 'green', 'blue', 'gold', 'silver']
+                }]
+            },
+            options: {
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+        const ctx2 = document.getElementById('myChart2');
+
+        let data2 = [];
+        let labels2 = [];
+
+        {%for t in stats_achievements %}
+        labels2.push('{{t.achievements__name}}');
+        data2.push({{t.TrainingPoint__totalScore}});
+        {% endfor %}
+
+        new Chart(ctx2, {
+            type: 'bar',
+            data: {
+                labels: labels2,
+                datasets: [{
+                    label: 'Điểm',
+                    data: data2,
                     borderWidth:  5,
                     borderColor: 'black',
                     backgroundColor: ['red', 'green', 'blue', 'gold', 'silver']
