@@ -13,11 +13,12 @@ class UserSerializer(serializers.ModelSerializer):
         }
 
     def create(self, validated_data):
-        data = validated_data.copy()
-
-        user = User(**data)
-        user.set_password(data['password'])
-        user.save()
+        user = User.objects.create_user(
+            email=validated_data['email'],
+            password=validated_data['password'],
+            username=validated_data['username'],
+            role='assistant'
+        )
         return user
 
 
@@ -72,6 +73,23 @@ class RegistrationSerializer(serializers.ModelSerializer):
     class Meta:
         model = Registration
         fields = ['attended', 'activity', 'student']
+
+
+class AssistantSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Assistant
+        fields = ['faculty', 'id', 'email', 'password', 'username']
+
+    def create(self, validated_data):
+        # Tạo một người dùng Assistant
+        user = Assistant.objects.create_user(
+            username=validated_data['username'],
+            email=validated_data['email'],
+            password=validated_data['password'],
+            faculty=validated_data['faculty'],
+            role='assistant'  # Nếu bạn sử dụng role để phân biệt loại người dùng
+        )
+        return user
 
 
 class CreateRegisterActivitySerializer(serializers.ModelSerializer):

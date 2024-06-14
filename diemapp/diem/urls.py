@@ -11,6 +11,7 @@ router.register('students', views.StudentViewSet, basename='student')
 router.register('missing-report', views.MissingPointsReportViewSet, basename='missing-report')
 router.register('users', views.UserViewSet, basename='users')
 router.register('comment', views.CommentViewSet, basename='comment')
+router.register('assistant', views.AssistantViewSet, basename='assistant')
 
 urlpatterns = [
     path('', include(router.urls))

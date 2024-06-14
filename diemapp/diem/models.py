@@ -124,7 +124,7 @@ class Activity(BaseModel):
 
 
 class Registration(BaseModel):
-    attended = models.BooleanField(default=False)
+    attended = models.BooleanField(default=False, null=True)
     student = models.ForeignKey(Student, on_delete=models.RESTRICT, related_name='registration')
     activity = models.ForeignKey(Activity, on_delete=models.RESTRICT, related_name='registration')
 

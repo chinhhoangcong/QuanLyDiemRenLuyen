@@ -24,8 +24,10 @@ class ActivityViewSet(viewsets.ViewSet, generics.ListAPIView, generics.RetrieveA
         return queries
 
     def get_permissions(self):
-        if self.action in ['add_comment', 'like', 'join_activity']:
+        if self.action in ['add_comment', 'like']:
             return [perms.IsStudentOfAuthenticated()]
+        if self.action in ['join_activity']:
+            return [perms.IsStudentAuthenticated()]
         if self.action in ['create']:
             return [perms.IsAssistantAuthenticated()]
 
@@ -119,7 +121,7 @@ class StudentViewSet(viewsets.ViewSet, generics.ListAPIView, generics.RetrieveAP
     @action(methods=['get'], detail=True, url_path="achievements")
     def achievements(self, request, pk):
         achievement = Achievements.objects.filter(student=self.get_object())
-        return Response(serializers.AchievementSerializer(achievement).data, status=status.HTTP_200_OK)
+        return Response(serializers.AchievementSerializer(achievement, many=True).data, status=status.HTTP_200_OK)
 
 
 class MissingPointsReportViewSet(viewsets.ViewSet, generics.ListAPIView, generics.RetrieveAPIView,
@@ -164,3 +166,37 @@ class CommentViewSet(viewsets.ViewSet, generics.DestroyAPIView, generics.UpdateA
     queryset = Comment.objects.all()
     serializer_class = serializers.CommentSerializer
     permission_classes = [perms.IsStudentOfAuthenticated]
+
+
+class AssistantViewSet(viewsets.ViewSet, generics.CreateAPIView):
+    queryset = Assistant.objects.all()
+    serializer_class = serializers.AssistantSerializer
+
+    def get_permissions(self):
+        if self.action in ['create']:
+            return [perms.IsManagerAuthenticated()]
+        return [permissions.AllowAny()]
+
+    def create(self, request, *args, **kwargs):
+        username = request.data.get('username')
+        email = request.data.get('email')
+        password = request.data.get('password')
+        faculty = request.data.get('faculty')
+        try:
+            khoa = Faculty.objects.get(name=faculty)
+        except Faculty.DoesNotExist:
+            return Response({'error': 'Khoa not found.'}, status=status.HTTP_404_NOT_FOUND)
+        serializer = self.get_serializer(data={
+            'username': username,
+            'email': email,
+            'password': password,
+            'faculty': khoa.id
+        })
+        serializer.is_valid(raise_exception=True)
+        self.perform_create(serializer)
+
+        headers = self.get_success_headers(serializer.data)
+        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+
+    def perform_create(self, serializer):
+        serializer.save()
