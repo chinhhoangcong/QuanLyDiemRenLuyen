@@ -24,9 +24,7 @@ class ActivityViewSet(viewsets.ViewSet, generics.ListAPIView, generics.RetrieveA
         return queries
 
     def get_permissions(self):
-        if self.action in ['add_comment', 'like']:
-            return [perms.IsStudentOfAuthenticated()]
-        if self.action in ['join_activity']:
+        if self.action in ['add_comment', 'join_activity', 'like']:
             return [perms.IsStudentAuthenticated()]
         if self.action in ['create']:
             return [perms.IsAssistantAuthenticated()]

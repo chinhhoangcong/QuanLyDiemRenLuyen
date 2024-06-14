@@ -20,7 +20,7 @@ class IsStudentAuthenticated(permissions.IsAuthenticated):
 
 class IsStudentOfAuthenticated(IsStudentAuthenticated):
     def has_object_permission(self, request, view, obj):
-        return bool(self.has_permission(request, view) and obj.student_id == request.user.id)
+        return self.has_permission(request, view) and obj.student_id == request.user.id
 
 
 class IsManagerAuthenticated(permissions.IsAuthenticated):
@@ -41,7 +41,7 @@ class IsAssistantAuthenticated(permissions.IsAuthenticated):
 
 class IsAssistantOfAuthenticated(IsAssistantAuthenticated):
     def has_object_permission(self, request, view, obj):
-        return bool(self.has_permission(request, view) and obj.assistant_id == request.user)
+        return bool(self.has_permission(request, view) and obj.assistant_id == request.user.id)
 
 
 # class IsMemberOfCommitteeOfAuthenticated(IsLecturerAuthenticated):
