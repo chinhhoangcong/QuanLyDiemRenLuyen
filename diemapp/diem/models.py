@@ -151,9 +151,10 @@ class MissingPointsReport(BaseModel):
 class Achievements(BaseModel):
     name = models.CharField(max_length=50, null=True)
     student = models.ForeignKey(Student, on_delete=models.RESTRICT, related_name="achievements")
+    activity = models.ForeignKey(Activity, on_delete=models.RESTRICT, null=True)
 
     def __str__(self):
-        return f"{self.student} - {self.name} "
+        return f"{self.student} - {self.name} - {self.activity}"
 
     class Meta:
         verbose_name_plural = 'Thành Tích Ngoại Khóa'
