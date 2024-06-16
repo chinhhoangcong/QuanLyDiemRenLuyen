@@ -1,21 +1,41 @@
-import { StatusBar } from 'expo-status-bar';
-import React from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { NavigationContainer } from "@react-navigation/native"
+import { DrawerContentScrollView, DrawerItem, DrawerItemList, createDrawerNavigator } from "@react-navigation/drawer"
+import Home from "./components/Home/Home";
+import Login from "./components/User/Login";
+import { useEffect, useState } from "react";
+import API, { endpoints } from "./configs/API";
 
-export default function App() {
+const Drawer = createDrawerNavigator();
+
+const App = () => {
   return (
-    <View style={styles.container}>
-      <Text>Open up App.js to start working on your app!</Text>
-      <StatusBar style="auto" />
-    </View>
-  );
+    <NavigationContainer>
+      <Drawer.Navigator drawerContent={MyDrawerItem}>
+        <Drawer.Screen name="Home" component={Home} options={{title: 'Hoạt Động'}} /> 
+        <Drawer.Screen name="Login" component={Login} />         
+      </Drawer.Navigator>
+    </NavigationContainer>
+  )
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#fff',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-});
+const MyDrawerItem = (props) => {
+  const [activities, setActivities] = useState([]);
+
+  useEffect(() => {
+    const loadActivities = async () => {
+      let res = await API.get(endpoints['activities'])
+      setActivities(res.data.results);
+    }
+    loadActivities();
+  }, [])
+
+  return (
+    <DrawerContentScrollView {...props}>
+      <DrawerItemList {...props} />
+      {activities.map(c => <DrawerItem label={c.name} key={c.id} 
+                                                      onPress={() => props.navigation.navigate('Home', {actId: c.name})} />)}
+    </DrawerContentScrollView>
+  )
+} 
+
+export default App;

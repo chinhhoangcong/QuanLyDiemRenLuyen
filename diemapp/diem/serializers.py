@@ -12,6 +12,11 @@ class UserSerializer(serializers.ModelSerializer):
             }
         }
 
+    avatar = serializers.SerializerMethodField(source='avatar')
+
+    def get_avatar(self, user):
+        return user.avatar.url
+
     def create(self, validated_data):
         user = User.objects.create_user(
             email=validated_data['email'],
@@ -64,7 +69,8 @@ class StatuteSerializer(serializers.ModelSerializer):
 class StudentSerializer(UserSerializer):
     class Meta:
         model = Student
-        fields = ['first_name', 'last_name', 'clas']
+        fields = ['first_name', 'last_name', 'clas', 'avatar']
+
 
 
 class RegistrationSerializer(serializers.ModelSerializer):
